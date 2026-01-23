@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include <mrs_uav_hw_api/publishers.h>
 #include <mrs_lib/transformer.h>
 #include <mrs_lib/param_loader.h>
@@ -49,4 +47,4 @@ struct CommonHandlers_t
   getWorldFrameName_t getWorldFrameName;
 };
 
-} // namespace mrs_uav_hw_api
+}  // namespace mrs_uav_hw_api

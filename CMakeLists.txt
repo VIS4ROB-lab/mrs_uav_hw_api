@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.5)
 project(mrs_uav_hw_api)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -48,56 +48,30 @@ set(DEPENDENCIES
 set(LIBRARIES
   MrsUavHwApi_HwApiManager
   MrsUavHwApi_DummyApi
-)
+  )
 
 foreach(DEP IN LISTS DEPENDENCIES)
   find_package(${DEP} REQUIRED)
 endforeach()
 
-add_library(MrsUavHwApi_MrsUavHwApi INTERFACE)
-add_library(mrs_uav_hw_api::mrs_uav_hw_api ALIAS MrsUavHwApi_MrsUavHwApi)
-set_target_properties(MrsUavHwApi_MrsUavHwApi
-  PROPERTIES
-    EXPORT_NAME mrs_uav_hw_api
-    OUTPUT_NAME mrs_uav_hw_api
-)
-target_sources(MrsUavHwApi_MrsUavHwApi
-  INTERFACE FILE_SET HEADERS BASE_DIRS "include"
-  FILES
-    "include/mrs_uav_hw_api/api.h"
-    "include/mrs_uav_hw_api/common_handlers.h"
-    "include/mrs_uav_hw_api/publishers.h"
-)
-target_link_libraries(MrsUavHwApi_MrsUavHwApi
-  INTERFACE
-    rclcpp::rclcpp
-    mrs_lib::mrs_lib
-    ${mrs_msgs_TARGETS}
-    ${geometry_msgs_TARGETS}
-    ${nav_msgs_TARGETS}
-    ${sensor_msgs_TARGETS}
-)
+include_directories(
+  include
+  ${rclcpp_INCLUDE_DIRS}
+  ${mrs_lib_INCLUDE_DIRS}
+  ${mrs_uav_testing_INCLUDE_DIRS}
+  )
 
 # Hw API manager
 
 add_library(MrsUavHwApi_HwApiManager SHARED
   src/hw_api_manager.cpp
+  )
+
+ament_target_dependencies(MrsUavHwApi_HwApiManager
+  ${DEPENDENCIES}
 )
 
-target_link_libraries(MrsUavHwApi_HwApiManager
-  PRIVATE
-    mrs_uav_hw_api::mrs_uav_hw_api
-    rclcpp::rclcpp
-    rclcpp_components::component
-    pluginlib::pluginlib
-    mrs_lib::mrs_lib
-    ${mrs_msgs_TARGETS}
-    ${geometry_msgs_TARGETS}
-    ${nav_msgs_TARGETS}
-    ${sensor_msgs_TARGETS}
-)
-
-rclcpp_components_register_nodes(MrsUavHwApi_HwApiManager "mrs_uav_hw_api::HwApiManager")
+rclcpp_components_register_nodes(MrsUavHwApi_HwApiManager PLUGIN "mrs_uav_hw_api::HwApiManager" EXECUTABLE MrsUavHwApi_HwApiManager)
 
 target_compile_definitions(MrsUavHwApi_HwApiManager PRIVATE USE_ROS_TIMER=${USE_ROS_TIMER})
 
@@ -105,19 +79,10 @@ target_compile_definitions(MrsUavHwApi_HwApiManager PRIVATE USE_ROS_TIMER=${USE_
 
 add_library(MrsUavHwApi_DummyApi SHARED
   src/dummy_api.cpp
-)
+  )
 
-target_link_libraries(MrsUavHwApi_DummyApi
-  PRIVATE
-    mrs_uav_hw_api::mrs_uav_hw_api
-    rclcpp::rclcpp
-    rclcpp_components::component
-    pluginlib::pluginlib
-    mrs_lib::mrs_lib
-    ${mrs_msgs_TARGETS}
-    ${geometry_msgs_TARGETS}
-    ${nav_msgs_TARGETS}
-    ${sensor_msgs_TARGETS}
+ament_target_dependencies(MrsUavHwApi_DummyApi
+  ${DEPENDENCIES}
 )
 
 target_compile_definitions(MrsUavHwApi_DummyApi PRIVATE USE_ROS_TIMER=${USE_ROS_TIMER})
@@ -143,15 +108,21 @@ endif()
 ## |                           Install                          |
 ## --------------------------------------------------------------
 
+ament_export_libraries(
+  ${LIBRARIES}
+)
+
 install(
-  TARGETS
-    MrsUavHwApi_MrsUavHwApi
-    ${LIBRARIES}
+  TARGETS ${LIBRARIES}
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
-  FILE_SET HEADERS DESTINATION "include/${PROJECT_NAME}"
+  )
+
+install(
+  DIRECTORY include/
+  DESTINATION include
 )
 
 install(
@@ -164,16 +135,12 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+ament_export_include_directories(
+  include
+)
+
 ament_export_targets(
   export_${PROJECT_NAME} HAS_LIBRARY_TARGET
-)
-
-ament_export_include_directories(
-  "include/${PROJECT_NAME}"
-)
-
-ament_export_libraries(
-  ${LIBRARIES}
 )
 
 ament_export_dependencies(

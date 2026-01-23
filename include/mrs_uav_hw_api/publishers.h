@@ -1,8 +1,6 @@
 #ifndef PUBLISHERS_H
 #define PUBLISHERS_H
 
-#include <functional>
-
 #include <sensor_msgs/msg/imu.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <sensor_msgs/msg/range.hpp>
@@ -145,6 +143,6 @@ struct Publishers_t
   publishOdometry_t publishGroundTruth;
 };
 
-} // namespace mrs_uav_hw_api
+}  // namespace mrs_uav_hw_api
 
-#endif // PUBLISHERS_H
+#endif  // PUBLISHERS_H
