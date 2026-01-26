@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.22)
 project(mrs_uav_hw_api)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -62,11 +62,13 @@ set_target_properties(MrsUavHwApi_MrsUavHwApi
     OUTPUT_NAME mrs_uav_hw_api
 )
 target_sources(MrsUavHwApi_MrsUavHwApi
-  INTERFACE FILE_SET HEADERS BASE_DIRS "include"
-  FILES
-    "include/mrs_uav_hw_api/api.h"
-    "include/mrs_uav_hw_api/common_handlers.h"
-    "include/mrs_uav_hw_api/publishers.h"
+  INTERFACE
+)
+
+target_include_directories(MrsUavHwApi_MrsUavHwApi
+  INTERFACE
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>"
 )
 target_link_libraries(MrsUavHwApi_MrsUavHwApi
   INTERFACE
@@ -151,7 +153,11 @@ install(
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
-  FILE_SET HEADERS DESTINATION "include/${PROJECT_NAME}"
+)
+
+install(
+  DIRECTORY include/
+  DESTINATION "include"
 )
 
 install(
