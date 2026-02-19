@@ -43,6 +43,7 @@ public:
   bool callbackVelocityHdgRateCmd(const mrs_msgs::msg::HwApiVelocityHdgRateCmd::ConstSharedPtr msg);
   bool callbackVelocityHdgCmd(const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr msg);
   bool callbackPositionCmd(const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg);
+  bool callbackTrajectoryCmd(const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr msg);
 
   void callbackTrackerCmd(const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg);
 
@@ -206,6 +207,15 @@ bool DummyApi::callbackVelocityHdgCmd([[maybe_unused]] const mrs_msgs::msg::HwAp
 /* callbackPositionCmd() //{ */
 
 bool DummyApi::callbackPositionCmd([[maybe_unused]] const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg) {
+
+  return false;
+}
+
+//}
+
+/* callbackTrajectoryCmd() //{ */
+
+bool DummyApi::callbackTrajectoryCmd([[maybe_unused]] const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr msg) {
 
   return false;
 }

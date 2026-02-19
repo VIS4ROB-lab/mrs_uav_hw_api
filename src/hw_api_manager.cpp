@@ -129,7 +129,7 @@ class HwApiManager : public mrs_lib::Node {
   mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>
       sh_velocity_hdg_cmd_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd> sh_position_cmd_;
-
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiTrajectoryCmd> sh_trajectory_cmd_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand> sh_tracker_cmd_;
 
   void callbackActuatorCmd(
@@ -150,6 +150,8 @@ class HwApiManager : public mrs_lib::Node {
       const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr msg);
   void callbackPositionCmd(
       const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg);
+  void callbackTrajectoryCmd(
+      const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr msg);
   void callbackTrackerCmd(
       const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg);
 
@@ -368,6 +370,10 @@ void HwApiManager::initialize() {
   sh_position_cmd_ =
       mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd>(
           shopts, "~/position_cmd", &HwApiManager::callbackPositionCmd, this);
+
+  sh_trajectory_cmd_ =
+      mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiTrajectoryCmd>(
+          shopts, "~/trajectory_cmd", &HwApiManager::callbackTrajectoryCmd, this);
 
   sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(
       shopts, "/" + _uav_name_ + "/control_manager/tracker_cmd",
@@ -877,6 +883,25 @@ void HwApiManager::callbackPositionCmd(
     RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000,
                          "the currently loaded HW API does not implement the "
                          "'position' command!");
+  }
+}
+
+//}
+
+/* callbackTrajectoryCmd() //{ */
+
+void HwApiManager::callbackTrajectoryCmd(
+    const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr msg) {
+  if (!is_initialized_) {
+    return;
+  }
+
+  bool result = hw_api_->callbackTrajectoryCmd(msg);
+
+  if (!result) {
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000,
+                         "the currently loaded HW API does not implement the "
+                         "'trajectory' command!");
   }
 }
 

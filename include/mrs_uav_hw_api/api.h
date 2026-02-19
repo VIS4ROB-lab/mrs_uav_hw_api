@@ -18,6 +18,7 @@
 #include <mrs_msgs/msg/hw_api_velocity_hdg_rate_cmd.hpp>
 #include <mrs_msgs/msg/hw_api_velocity_hdg_cmd.hpp>
 #include <mrs_msgs/msg/hw_api_position_cmd.hpp>
+#include <mrs_msgs/msg/hw_api_trajectory_cmd.hpp>
 #include <mrs_msgs/msg/hw_api_status.hpp>
 #include <mrs_msgs/msg/hw_api_capabilities.hpp>
 #include <mrs_msgs/msg/tracker_command.hpp>
@@ -142,6 +143,15 @@ public:
    * @return success (true if processed).
    */
   virtual bool callbackPositionCmd(const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg) = 0;
+
+  /**
+   * @brief Callback for the incoming TrajectoryCmd control reference.
+   *
+   * @param msg incoming ROS message
+   *
+   * @return success (true if processed).
+   */
+  virtual bool callbackTrajectoryCmd(const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr msg) = 0;
 
   /**
    * @brief Callback for the incoming TrackerCommand. The tracker command is provided by the reference generator of the MRS UAV System and it can be used as a
