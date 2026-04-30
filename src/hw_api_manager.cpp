@@ -129,7 +129,8 @@ class HwApiManager : public mrs_lib::Node {
   mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiVelocityHdgCmd>
       sh_velocity_hdg_cmd_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiPositionCmd> sh_position_cmd_;
-  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiTrajectoryCmd> sh_trajectory_cmd_;
+  mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiTrajectoryCmd>
+      sh_trajectory_cmd_;
   mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand> sh_tracker_cmd_;
 
   void callbackActuatorCmd(
@@ -216,11 +217,15 @@ class HwApiManager : public mrs_lib::Node {
 
   mrs_lib::ServiceServerHandler<std_srvs::srv::SetBool> ss_arming_;
   mrs_lib::ServiceServerHandler<std_srvs::srv::Trigger> ss_offboard_;
+  mrs_lib::ServiceServerHandler<std_srvs::srv::Trigger> ss_reboot_;
 
   bool callbackArming(
       const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
       const std::shared_ptr<std_srvs::srv::SetBool::Response> response);
   bool callbackOffboard(
+      const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
+      const std::shared_ptr<std_srvs::srv::Trigger::Response> response);
+  bool callbackReboot(
       const std::shared_ptr<std_srvs::srv::Trigger::Request> request,
       const std::shared_ptr<std_srvs::srv::Trigger::Response> response);
 
@@ -373,7 +378,8 @@ void HwApiManager::initialize() {
 
   sh_trajectory_cmd_ =
       mrs_lib::SubscriberHandler<mrs_msgs::msg::HwApiTrajectoryCmd>(
-          shopts, "~/trajectory_cmd", &HwApiManager::callbackTrajectoryCmd, this);
+          shopts, "~/trajectory_cmd", &HwApiManager::callbackTrajectoryCmd,
+          this);
 
   sh_tracker_cmd_ = mrs_lib::SubscriberHandler<mrs_msgs::msg::TrackerCommand>(
       shopts, "/" + _uav_name_ + "/control_manager/tracker_cmd",
@@ -583,6 +589,11 @@ void HwApiManager::initialize() {
   ss_offboard_ = mrs_lib::ServiceServerHandler<std_srvs::srv::Trigger>(
       node_, "~/offboard",
       std::bind(&HwApiManager::callbackOffboard, this, std::placeholders::_1,
+                std::placeholders::_2),
+      cbkgrp_ss_);
+  ss_reboot_ = mrs_lib::ServiceServerHandler<std_srvs::srv::Trigger>(
+      node_, "~/reboot",
+      std::bind(&HwApiManager::callbackReboot, this, std::placeholders::_1,
                 std::placeholders::_2),
       cbkgrp_ss_);
 
@@ -957,6 +968,28 @@ bool HwApiManager::callbackOffboard(
   RCLCPP_INFO(node_->get_logger(), "switching to offboard");
 
   auto [success, message] = hw_api_->callbackOffboard();
+
+  response->success = success;
+  response->message = message;
+
+  return true;
+}
+
+//}
+
+/* callbackReboot() //{ */
+
+bool HwApiManager::callbackReboot(
+    [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Trigger::Request>
+        request,
+    const std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+  if (!is_initialized_) {
+    return false;
+  }
+
+  RCLCPP_INFO(node_->get_logger(), "rebooting UAV");
+
+  auto [success, message] = hw_api_->callbackReboot();
 
   response->success = success;
   response->message = message;

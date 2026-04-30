@@ -1,61 +1,71 @@
 /* includes //{ */
 
-#include <rclcpp/rclcpp.hpp>
-
+#include <mrs_lib/attitude_converter.h>
+#include <mrs_lib/mutex.h>
+#include <mrs_lib/param_loader.h>
+#include <mrs_lib/publisher_handler.h>
 #include <mrs_uav_hw_api/api.h>
 
 #include <nav_msgs/msg/odometry.hpp>
-
-#include <mrs_lib/param_loader.h>
-#include <mrs_lib/attitude_converter.h>
-#include <mrs_lib/mutex.h>
-#include <mrs_lib/publisher_handler.h>
+#include <rclcpp/rclcpp.hpp>
 
 //}
 
-namespace mrs_uav_hw_api
-{
+namespace mrs_uav_hw_api {
 
 /* class DummyApi //{ */
 
 class DummyApi : public mrs_uav_hw_api::MrsUavHwApi {
-
-public:
+ public:
   /* ~DummyApi(){}; */
 
-  void initialize(const rclcpp::Node::SharedPtr &node, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers);
+  void initialize(
+      const rclcpp::Node::SharedPtr& node,
+      std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers);
 
   void destroy();
 
   // | --------------------- status methods --------------------- |
 
-  mrs_msgs::msg::HwApiStatus       getStatus();
+  mrs_msgs::msg::HwApiStatus getStatus();
   mrs_msgs::msg::HwApiCapabilities getCapabilities();
 
   // | --------------------- topic callbacks -------------------- |
 
-  bool callbackActuatorCmd(const mrs_msgs::msg::HwApiActuatorCmd::ConstSharedPtr msg);
-  bool callbackControlGroupCmd(const mrs_msgs::msg::HwApiControlGroupCmd::ConstSharedPtr msg);
-  bool callbackAttitudeRateCmd(const mrs_msgs::msg::HwApiAttitudeRateCmd::ConstSharedPtr msg);
-  bool callbackAttitudeCmd(const mrs_msgs::msg::HwApiAttitudeCmd::ConstSharedPtr msg);
-  bool callbackAccelerationHdgRateCmd(const mrs_msgs::msg::HwApiAccelerationHdgRateCmd::ConstSharedPtr msg);
-  bool callbackAccelerationHdgCmd(const mrs_msgs::msg::HwApiAccelerationHdgCmd::ConstSharedPtr msg);
-  bool callbackVelocityHdgRateCmd(const mrs_msgs::msg::HwApiVelocityHdgRateCmd::ConstSharedPtr msg);
-  bool callbackVelocityHdgCmd(const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr msg);
-  bool callbackPositionCmd(const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg);
-  bool callbackTrajectoryCmd(const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr msg);
+  bool callbackActuatorCmd(
+      const mrs_msgs::msg::HwApiActuatorCmd::ConstSharedPtr msg);
+  bool callbackControlGroupCmd(
+      const mrs_msgs::msg::HwApiControlGroupCmd::ConstSharedPtr msg);
+  bool callbackAttitudeRateCmd(
+      const mrs_msgs::msg::HwApiAttitudeRateCmd::ConstSharedPtr msg);
+  bool callbackAttitudeCmd(
+      const mrs_msgs::msg::HwApiAttitudeCmd::ConstSharedPtr msg);
+  bool callbackAccelerationHdgRateCmd(
+      const mrs_msgs::msg::HwApiAccelerationHdgRateCmd::ConstSharedPtr msg);
+  bool callbackAccelerationHdgCmd(
+      const mrs_msgs::msg::HwApiAccelerationHdgCmd::ConstSharedPtr msg);
+  bool callbackVelocityHdgRateCmd(
+      const mrs_msgs::msg::HwApiVelocityHdgRateCmd::ConstSharedPtr msg);
+  bool callbackVelocityHdgCmd(
+      const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr msg);
+  bool callbackPositionCmd(
+      const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg);
+  bool callbackTrajectoryCmd(
+      const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr msg);
 
-  void callbackTrackerCmd(const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg);
+  void callbackTrackerCmd(
+      const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg);
 
   // | -------------------- service callbacks ------------------- |
 
-  std::tuple<bool, std::string> callbackArming(const bool &request);
+  std::tuple<bool, std::string> callbackArming(const bool& request);
   std::tuple<bool, std::string> callbackOffboard(void);
+  std::tuple<bool, std::string> callbackReboot(void);
 
-private:
+ private:
   bool is_initialized_ = false;
 
-  rclcpp::Node::SharedPtr  node_;
+  rclcpp::Node::SharedPtr node_;
   rclcpp::Clock::SharedPtr clock_;
 
   std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers_;
@@ -69,11 +79,12 @@ private:
 
 /* initialize() //{ */
 
-void DummyApi::initialize(const rclcpp::Node::SharedPtr &node, std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) {
-
+void DummyApi::initialize(
+    const rclcpp::Node::SharedPtr& node,
+    std::shared_ptr<mrs_uav_hw_api::CommonHandlers_t> common_handlers) {
   common_handlers_ = common_handlers;
 
-  node_  = node;
+  node_ = node;
   clock_ = node->get_clock();
 
   // | ------------------- loading parameters ------------------- |
@@ -96,21 +107,19 @@ void DummyApi::initialize(const rclcpp::Node::SharedPtr &node, std::shared_ptr<m
 
 /* destroy() //{ */
 
-void DummyApi::destroy() {
-}
+void DummyApi::destroy() {}
 
 //}
 
 /* getStatus() //{ */
 
 mrs_msgs::msg::HwApiStatus DummyApi::getStatus() {
-
   mrs_msgs::msg::HwApiStatus diag;
 
   diag.stamp = clock_->now();
 
-  diag.armed     = false;
-  diag.offboard  = false;
+  diag.armed = false;
+  diag.offboard = false;
   diag.connected = false;
 
   return diag;
@@ -121,11 +130,10 @@ mrs_msgs::msg::HwApiStatus DummyApi::getStatus() {
 /* getCapabilities() //{ */
 
 mrs_msgs::msg::HwApiCapabilities DummyApi::getCapabilities() {
-
   mrs_msgs::msg::HwApiCapabilities mode;
 
   mode.api_name = "DummyApi";
-  mode.stamp    = clock_->now();
+  mode.stamp = clock_->now();
 
   return mode;
 }
@@ -134,8 +142,9 @@ mrs_msgs::msg::HwApiCapabilities DummyApi::getCapabilities() {
 
 /* callbackActuatorCmd() //{ */
 
-bool DummyApi::callbackActuatorCmd([[maybe_unused]] const mrs_msgs::msg::HwApiActuatorCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackActuatorCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiActuatorCmd::ConstSharedPtr
+        msg) {
   return false;
 }
 
@@ -143,8 +152,9 @@ bool DummyApi::callbackActuatorCmd([[maybe_unused]] const mrs_msgs::msg::HwApiAc
 
 /* callbackControlGroupCmd() //{ */
 
-bool DummyApi::callbackControlGroupCmd([[maybe_unused]] const mrs_msgs::msg::HwApiControlGroupCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackControlGroupCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiControlGroupCmd::ConstSharedPtr
+        msg) {
   return false;
 }
 
@@ -152,8 +162,9 @@ bool DummyApi::callbackControlGroupCmd([[maybe_unused]] const mrs_msgs::msg::HwA
 
 /* callbackAttitudeRateCmd() //{ */
 
-bool DummyApi::callbackAttitudeRateCmd([[maybe_unused]] const mrs_msgs::msg::HwApiAttitudeRateCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackAttitudeRateCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiAttitudeRateCmd::ConstSharedPtr
+        msg) {
   return false;
 }
 
@@ -161,8 +172,9 @@ bool DummyApi::callbackAttitudeRateCmd([[maybe_unused]] const mrs_msgs::msg::HwA
 
 /* callbackAttitudeCmd() //{ */
 
-bool DummyApi::callbackAttitudeCmd([[maybe_unused]] const mrs_msgs::msg::HwApiAttitudeCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackAttitudeCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiAttitudeCmd::ConstSharedPtr
+        msg) {
   return false;
 }
 
@@ -170,8 +182,9 @@ bool DummyApi::callbackAttitudeCmd([[maybe_unused]] const mrs_msgs::msg::HwApiAt
 
 /* callbackAccelerationHdgRateCmd() //{ */
 
-bool DummyApi::callbackAccelerationHdgRateCmd([[maybe_unused]] const mrs_msgs::msg::HwApiAccelerationHdgRateCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackAccelerationHdgRateCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiAccelerationHdgRateCmd::
+        ConstSharedPtr msg) {
   return false;
 }
 
@@ -179,8 +192,9 @@ bool DummyApi::callbackAccelerationHdgRateCmd([[maybe_unused]] const mrs_msgs::m
 
 /* callbackAccelerationHdgCmd() //{ */
 
-bool DummyApi::callbackAccelerationHdgCmd([[maybe_unused]] const mrs_msgs::msg::HwApiAccelerationHdgCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackAccelerationHdgCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiAccelerationHdgCmd::
+        ConstSharedPtr msg) {
   return false;
 }
 
@@ -188,8 +202,9 @@ bool DummyApi::callbackAccelerationHdgCmd([[maybe_unused]] const mrs_msgs::msg::
 
 /* callbackVelocityHdgRateCmd() //{ */
 
-bool DummyApi::callbackVelocityHdgRateCmd([[maybe_unused]] const mrs_msgs::msg::HwApiVelocityHdgRateCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackVelocityHdgRateCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiVelocityHdgRateCmd::
+        ConstSharedPtr msg) {
   return false;
 }
 
@@ -197,8 +212,9 @@ bool DummyApi::callbackVelocityHdgRateCmd([[maybe_unused]] const mrs_msgs::msg::
 
 /* callbackVelocityHdgCmd() //{ */
 
-bool DummyApi::callbackVelocityHdgCmd([[maybe_unused]] const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackVelocityHdgCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiVelocityHdgCmd::ConstSharedPtr
+        msg) {
   return false;
 }
 
@@ -206,8 +222,9 @@ bool DummyApi::callbackVelocityHdgCmd([[maybe_unused]] const mrs_msgs::msg::HwAp
 
 /* callbackPositionCmd() //{ */
 
-bool DummyApi::callbackPositionCmd([[maybe_unused]] const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackPositionCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiPositionCmd::ConstSharedPtr
+        msg) {
   return false;
 }
 
@@ -215,8 +232,9 @@ bool DummyApi::callbackPositionCmd([[maybe_unused]] const mrs_msgs::msg::HwApiPo
 
 /* callbackTrajectoryCmd() //{ */
 
-bool DummyApi::callbackTrajectoryCmd([[maybe_unused]] const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr msg) {
-
+bool DummyApi::callbackTrajectoryCmd(
+    [[maybe_unused]] const mrs_msgs::msg::HwApiTrajectoryCmd::ConstSharedPtr
+        msg) {
   return false;
 }
 
@@ -224,15 +242,15 @@ bool DummyApi::callbackTrajectoryCmd([[maybe_unused]] const mrs_msgs::msg::HwApi
 
 /* callbackTrackerCmd() //{ */
 
-void DummyApi::callbackTrackerCmd([[maybe_unused]] const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg) {
-}
+void DummyApi::callbackTrackerCmd(
+    [[maybe_unused]] const mrs_msgs::msg::TrackerCommand::ConstSharedPtr msg) {}
 
 //}
 
 /* callbackArming() //{ */
 
-std::tuple<bool, std::string> DummyApi::callbackArming([[maybe_unused]] const bool &request) {
-
+std::tuple<bool, std::string> DummyApi::callbackArming(
+    [[maybe_unused]] const bool& request) {
   return {false, "Dummy interface does not allow to arm."};
 }
 
@@ -241,13 +259,20 @@ std::tuple<bool, std::string> DummyApi::callbackArming([[maybe_unused]] const bo
 /* callbackOffboard() //{ */
 
 std::tuple<bool, std::string> DummyApi::callbackOffboard(void) {
-
   return {false, "Dummy interface does not allow to switch to offboard."};
 }
 
 //}
 
-} // namespace mrs_uav_hw_api
+/* callbackReboot() //{ */
+
+std::tuple<bool, std::string> DummyApi::callbackReboot(void) {
+  return {false, "Dummy interface does not allow to reboot."};
+}
+
+//}
+
+}  // namespace mrs_uav_hw_api
 
 #include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(mrs_uav_hw_api::DummyApi, mrs_uav_hw_api::MrsUavHwApi)
